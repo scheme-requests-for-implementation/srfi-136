@@ -1,0 +1,372 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>SRFI 136: Extensible record types</title>
+    <link rel="stylesheet" href="http://srfi.schemers.org/srfi.css" type="text/css" />
+  </head>
+
+  <body>
+
+<h1>Title</h1>
+
+Extensible record types
+
+<h1>Author</h1>
+
+<p>Marc Nieper-Wi&szlig;kirchen</p>
+
+<h1>Abstract</h1>
+
+<p>
+  SRFI 9 and the compatible R7RS-small provide Scheme with record
+  types. The basic problem that is solved by these record types is that
+  they allow the user to introduce new types, disjoint from all existing
+  types. The record type system described in this document is a
+  conservative extension to SRFI 9 and R7RS-small record types, which intends to
+  solve another fundamental problem, namely the introduction of subtypes.
+</p>
+
+<h1>Issues</h1>
+
+<p>
+  No issues at present.
+</p>
+
+<h1>Rationale</h1>
+
+<p>
+As mentioned in the abstract, the record type definitions of
+R7RS-small allow for the introduction of new disjoint types,
+called <em>record types</em>. Each value of such a record type denotes
+a set of locations, one location for each record field defined by the
+record type. Each field, that is the location corresponding to that
+field, can be either mutable or immutable depending on whether the
+record type definition defines a mutator procedure for that field or
+not. To give immutable fields a value, a suitable constructor procedure of
+the record type has to be defined and used.
+</p>
+
+<p>
+  What isn't specified by the record types of R7RS-small is a way to
+  extend record types.
+  <em>Extending</em> a record type means to create a new record type
+  that extends the given record type by adding zero or more new fields to it. The
+  newly created type is not disjoint to all existing types in the sense
+  that it effectively becomes a subtype of the record type that is
+  extended. In order to construct a value of an extended type, the
+  constructor of the type that is extended has to be invoked on the way.
+</p>
+
+<p>
+  The purpose of this SRFI is to specify a syntactic extension to the
+  record system of R7RS-small that allows extending record types in
+  the manner described above. The constructor procedures that can be
+  defined with the syntax of this SRFI are of a rather rigid form (for
+  example, the first arguments of a constructor of a subtype have to
+  correspond to the arguments of the constructor of the parent, if
+  any). If constructors of a different signature are needed, it is
+  expected that they are defined by the user using ordinary Scheme
+  definitions and the constructor defined by the record type
+  definition. Another syntactic layer on top of the record types
+  defined here is also possible. The guiding principle of this
+  proposal, however, is just to provide the primitives on which more
+  sophisticated systems (like an object system with single
+  inheritence) can be built.
+</p>
+
+<p>
+  Without any further extension by further SRFIs or further revisions of R7RS,
+  it makes the following guarantees:
+</p>
+<ul>
+  <li>An immutable field of a parent record type remains immutable in its subtypes.</li>
+  <li>A subtype cannot change the subset of those parent fields that are initialized in
+    the constructor.</li>
+  <li>Subtypes cannot overwrite parent fields.</li>
+</ul>
+
+This specification also provides a minimal procedural interface and very basic
+introspection facilities, on which more sophisticated systems like the one
+specified by SRFI 99 can be built. R7RS leaves it open whether the record type
+descriptor is bound by a record-type definition to a runtime object or a syntactic
+representation. In order to be able to provide introspection facilities already
+at the expansion level, in this specification the choice of a syntactic representation
+as a keyword has been made. Due to this choice, the record type descriptor cannot serve
+as a descriptor for the record type in the procedural interface. The record-type predicate,
+which also uniquely describes a record-type, is used in the procedural interface instead.
+
+<h1>Specification</h1>
+
+<h2>Syntax</h2>
+
+<p>
+This SRFI extends 7.1.6 of R7RS-small as follows:
+</p>
+
+<pre>
+ &lt;definition&gt;           
+   -&gt; &lt;record-type definition&gt;
+ 
+ &lt;record type definition&gt;
+   -&gt; (define-record-type &lt;type spec&gt;
+        &lt;constructor spec&gt;
+        &lt;predicate spec&gt;
+        &lt;field spec&gt; ...)
+
+ &lt;type spec&gt;  -&gt; &lt;type name&gt;
+                    -&gt; (&lt;type name&gt; &lt;parent&gt;)
+                    -&gt; (&lt;type name&gt; &lt;parent&gt;)
+
+ &lt;constructor spec&gt;
+              -&gt; #f
+              -&gt; &lt;constructor name&gt;
+              -&gt; (&lt;constructor name&gt; &lt;field name&gt; ...)
+
+ &lt;predicate spec&gt;
+              -&gt; #f
+              -&gt; &lt;predicate name&gt;
+
+ &lt;field spec&gt; -&gt; (&lt;field name&gt; &lt;accessor name&gt;)
+              -&gt; (&lt;field name&gt; &lt;accessor name&gt; &lt;mutator name&gt;)
+
+ &lt;parent&gt;           -&gt; &lt;expression&gt;
+
+ &lt;type name&gt;        -&gt; &lt;identifier&gt;
+ &lt;constructor name&gt; -&gt; &lt;identifier&gt;
+ &lt;predicate name&gt;   -&gt; &lt;identifier&gt;
+ &lt;accessor name&gt;    -&gt; &lt;identifier&gt;
+ &lt;mutator name&gt;     -&gt; &lt;identifier&gt;
+ &lt;field name&gt;       -&gt; &lt;identifier&gt;
+                    -&gt; #f
+
+ &lt;rtd definition&gt;   -&gt; (define-rtd &lt;rtd fieldspecs&gt; &lt;rtd parent&gt;)
+ &lt;rtd fieldspecs&gt;   -&gt; &lt;expression&gt;
+ &lt;rtd parent&gt;       -&gt; &lt;expression&gt;
+ 
+ &lt;macro use&gt;        -&gt; (&lt;type name&gt; (&lt;keyword&gt; &lt;datum&gt; ...))
+</pre>
+
+<p>
+  The semantics of a record type definition is the same as in R7RS-small
+  except for the following additions:
+</p>
+
+<p>
+  The record-type definition macro-expands into a cluster of definitions that:
+</p>
+<ul>
+  <li>define the <code>&lt;type name&gt;</code> as the record-type
+    descriptor for the new record-type;</li>
+  <li>defines a constructor for instances of the new record-type
+    (unless the constructor spec is <code>#f</code>);</li>
+  <li>defines a predicate that recognizes instances of the new
+  record-type and its subtypes (unless the predicate spec
+  is <code>#f</code>);</li>
+  <li>defines an accessor for each field name;</li>
+  <li>defines a mutator for each mutable field name</li>
+</ul>
+
+<p>
+A record type definition extends R7RS-small with the following additional options:
+</p>
+<ul>
+  <li>
+    If a <code>&lt;parent&gt;</code> expression is specified and not <code>#f</code>,
+    then it must be an identifier bound to a record-type descriptor that serves as the
+    parent record-type for the record-type being defined.
+  </li>
+  <li>If <code>#f</code> is specified for the constructor or predicate,
+    then no constructor or predicate procedure is defined. (This is
+    useful when the record-type being defined will be used as an
+    abstract base class and has no immutable fields.)</li>
+  <li>If the constructor name is specified as an identifier, then the
+    constructor's arguments correspond to the arguments of the
+    parent's constructor (if there is no parent constructor, the
+    arguments correspond to the argument of the constructor of the
+    parent's parent, and so on) followed by the new fields added by
+    this record-type definition in the specified order.</li>
+  <li>If <code>#f</code> is specified for a field name that field is effectively
+    unnamed.</li>
+</ul>
+
+<p>When a constructor spec is of the form <code>(&lt;constructor
+    name&gt; &lt;field name&gt; ...)</code> and the parent's constructor
+    takes <em>n</em> arguments (if there is no parent constructor, the
+    constructor of the parent's parent is considered, and so on)</code>:</p>
+<ul>
+  <li>The first <em>n</em> field names are arbitrary identifiers, which correspond to arguments
+    of the parent's constructor. (While it is not strictly necessary to name these identifiers after
+    the identifiers used in the parent's constructor, it will certainly help readability of the
+    source.) The other arguments
+    correspond to field names or accessor names (field names take precedence) declared in the
+    same <code>define-record-type</code> form. (Here, an argument corresponds to an accessor name
+    as if it was a variable reference corresponding to a variable.)</li>
+  <li>It is an error if the same identifier appears more than once in
+    the field names of the constructor spec.</li>
+</ul>
+
+<p>When <code>&lt;type name&gt;</code> is the record-type descriptor
+  for a record-type, the macro use <code>(&lt;type name&gt;
+  (&lt;keyword&gt; &lt;datum&gt; ...))</code>  macro-expands into
+<pre>
+ (&lt;keyword&gt; &lt;datum&gt; ... &lt;parent&gt; &lt;field-spec&gt; ...)
+</pre>
+such that:
+
+<ul>
+  <li><code>&lt;parent&gt;</code> is either the record-type descriptor
+    of the parent of the record-type described by <code>&lt;type
+      name&gt;</code> or <code>#f</code> if there is no parent;</li>
+  <li>the sublist of <code>&lt;field-spec&gt;</code>s corresponds to the sublist of
+    <code>&lt;field-spec&gt;</code>s in the record-type definition
+    of <code>&lt;type name&gt;</code> such that each <code>&lt;accessor name&gt;</code> and
+    <code>&lt;mutator name&gt;</code> is an identifier bound to the appropriate procedure.</li>
+</ul>
+
+<h2>Procedures</h2>
+
+The following set of procedures is defined:
+
+<p>
+  <code>(record? <em>obj</em>)</code>
+</p>
+
+<p>
+  Returns <code>#t</code> if and only if <code><em>obj</em></code> is a record constructed by
+  one of the constructors defined by this specification.
+</p>
+
+<p>
+  <code>(record-type-predicate <em>record</em>)</code>
+</p>
+
+<p>
+  Returns the type predicate of the record type of the record <code><em>record</em></code>
+  or <code>#f</code> if none is defined.
+</p>
+
+<p>
+  <code>(record-type-name <em>predicate</em>)</code>
+</p>
+
+<p>
+  Returns the name of the record-type, for which <code><em>predicate</em></code> is the type
+  predicate, as a symbol.
+</p>
+
+<p>
+  <code>(record-type-parent <em>predicate</em>)</code>
+</p>
+
+<p>
+  Returns the type predicate of the parent of the record-type, for which
+  <code><em>predicate</em></code> is the type predicate, or <code>#f</code> if there is no parent.
+</p>
+
+<p>
+  <code>(record-type-fields <em>predicate</em>)</code>
+</p>
+
+<p>
+  Returns a list of three-elements lists of the
+  form <code>(<em>field-name</em> <em>accessor</em> <em>mutator</em>)</code>
+  corresponding to the fields (excluding those of parent record-types)
+  defined by the record-type, for
+  which <code><em>predicate</em></code> is the type predicate, such
+  that:
+  <ul>
+    <li><code><em>field name</em></code> is the name of the field as a symbol or
+      <code>#f</code> if it is unnamed;</li>
+    <li><code><em>accessor</em></code> is the accessor defined for the field;</li>
+    <li><code><em>mutator</em></code> is the mutator defined for the field if it is mutable and
+      <code>#f</code> otherwise.</li>
+  </ul>
+</p>
+
+<p>
+  <code>(make-record-type-predicate <em>name</em> <em>fieldspecs</em>)</code>
+<p>
+
+<p>
+  <code>(make-record-type-predicate <em>name</em> <em>fieldspecs</em> <em>parent</em>)</code>
+<p>
+  
+<p>
+  If <code><em>name</em></code> evaluates to a symbol <code>'&lt;type name&gt;</code>
+  and <code><em>parent</em></code> evaluates to the type predicate of a record type definition of
+  <code>&lt;parent&gt;</code> (if the argument <code><em>parent</em></code> is omitted,
+  <code>&lt;parent&gt;</code> defaults to <code>#f</code>),  
+  and <code><em>fieldspecs</em></code> evaluates to a list <code>'(&lt;field spec&gt; ...)</code>,
+  the application
+  <code>(make-record-type-predicate <em>name</em> <em>fieldspecs</em> <em>parent</em>)</code>
+  evaluates to
+<pre>
+ (let ()
+   (define-record-type (&lt;type name&gt; &lt;parent&gt;)
+     #f
+     predicate
+     &lt;field spec&gt; ...)
+   predicate)
+</pre>
+  where the accessor and mutator names (if any) are effectively renamed to make them unique.    
+</p>
+
+<p>
+  <code>(make-record <em>predicate</em> <em>field-vector</em>)</code>
+<p>
+
+<p>
+  Returns an instance of the record type, for which <code><em>predicate</em></code> is the
+  record-type predicate, whose fields (including those of parent record-types with the fields of
+  parent record-types coming first) are initialized with the objects in the vector
+  <em>field-vector</em> in order. It is an error if the <em>field-vector</em> does not have as
+  many elements as there are fields. It is unspecified whether the vector is shared with
+  the newly created record.
+</p>
+
+<h1>Implementation</h1>
+
+The sample implementation is given as an R7RS library, which only relies on the bindings
+exported by <code>(scheme base)</code>. In particular, it is implemented using only
+syntax-rules macros and does not rely on more sophisticated/less beautiful macro facilities.
+
+<a href="nieper/records.sld">Source for the reference implementation.</a>
+
+<h1>Acknowledgements</h1>
+
+<p>
+Credit goes to all members of the Scheme Working Group 2, who
+participated in the discussion of record types in R7RS-large. Quite a lot of
+wording was copied verbatim from SRFI 131.
+</p>
+
+<h1>Copyright</h1>
+
+Copyright (C) Marc Nieper-Wi&szlig;kirchen (2016).  All Rights Reserved. 
+</p>
+
+<p>
+  Permission is hereby granted, free of charge, to any person
+  obtaining a copy of this software and associated documentation files
+  (the "Software"), to deal in the Software without restriction,
+  including without limitation the rights to use, copy, modify, merge,
+  publish, distribute, sublicense, and/or sell copies of the Software,
+  and to permit persons to whom the Software is furnished to do so,
+  subject to the following conditions:
+
+<p>
+  The above copyright notice and this permission notice shall be
+  included in all copies or substantial portions of the Software.
+
+<p>
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+  BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+  ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+  
+  <hr>
+  <address>Editor: <a href="mailto:srfi-editors at srfi dot schemers dot org">Arthur A. Gleckler</a></address></body></html>
