@@ -31,7 +31,7 @@ Extensible record types
   types. The basic problem that is solved by these record types is that
   they allow the user to introduce new types, disjoint from all existing
   types. The record type system described in this document is a
-  conservative extension to SRFI 9 and R7RS-small record types, which intends to
+  conservative extension to SRFI 9 and R7RS-small record types that is intended to
   solve another fundamental problem, namely the introduction of subtypes.
 </p>
 
@@ -124,7 +124,6 @@ This SRFI extends 7.1.6 of R7RS-small as follows:
 
  &lt;type spec&gt;  -&gt; &lt;type name&gt;
                     -&gt; (&lt;type name&gt; &lt;parent&gt;)
-                    -&gt; (&lt;type name&gt; &lt;parent&gt;)
 
  &lt;constructor spec&gt;
               -&gt; #f
@@ -138,7 +137,8 @@ This SRFI extends 7.1.6 of R7RS-small as follows:
  &lt;field spec&gt; -&gt; (&lt;field name&gt; &lt;accessor name&gt;)
               -&gt; (&lt;field name&gt; &lt;accessor name&gt; &lt;mutator name&gt;)
 
- &lt;parent&gt;           -&gt; &lt;expression&gt;
+ &lt;parent&gt;           -&gt; &lt;keyword&gt;
+                    -&gt; #f
 
  &lt;type name&gt;        -&gt; &lt;identifier&gt;
  &lt;constructor name&gt; -&gt; &lt;identifier&gt;
@@ -147,10 +147,6 @@ This SRFI extends 7.1.6 of R7RS-small as follows:
  &lt;mutator name&gt;     -&gt; &lt;identifier&gt;
  &lt;field name&gt;       -&gt; &lt;identifier&gt;
                     -&gt; #f
-
- &lt;rtd definition&gt;   -&gt; (define-rtd &lt;rtd fieldspecs&gt; &lt;rtd parent&gt;)
- &lt;rtd fieldspecs&gt;   -&gt; &lt;expression&gt;
- &lt;rtd parent&gt;       -&gt; &lt;expression&gt;
  
  &lt;macro use&gt;        -&gt; (&lt;type name&gt; (&lt;keyword&gt; &lt;datum&gt; ...))
 </pre>
@@ -214,23 +210,19 @@ A record type definition extends R7RS-small with the following additional option
     the field names of the constructor spec.</li>
 </ul>
 
-<p>When <code>&lt;type name&gt;</code> is the record-type descriptor
-  for a record-type, the macro use <code>(&lt;type name&gt;
-  (&lt;keyword&gt; &lt;datum&gt; ...))</code>  macro-expands into
+<p>Let <code>&lt;type name&gt;</code> be the record-type descriptor
+  for a record-type defined by:
+<pre>
+ (define-record-type (&lt;type name&gt; &lt;parent&gt;)
+   &lt;constructor spec&gt;
+   &lt;predicate spec&gt;
+   &lt;field spec&gt; ...)
+</pre>
+Then the macro use <code>(&lt;type name&gt;
+  (&lt;keyword&gt; &lt;datum&gt; ...))</code> macro-expands into:
 <pre>
  (&lt;keyword&gt; &lt;datum&gt; ... &lt;parent&gt; &lt;field-spec&gt; ...)
 </pre>
-such that:
-
-<ul>
-  <li><code>&lt;parent&gt;</code> is either the record-type descriptor
-    of the parent of the record-type described by <code>&lt;type
-      name&gt;</code> or <code>#f</code> if there is no parent;</li>
-  <li>the sublist of <code>&lt;field-spec&gt;</code>s corresponds to the sublist of
-    <code>&lt;field-spec&gt;</code>s in the record-type definition
-    of <code>&lt;type name&gt;</code> such that each <code>&lt;accessor name&gt;</code> and
-    <code>&lt;mutator name&gt;</code> is an identifier bound to the appropriate procedure.</li>
-</ul>
 
 <h2>Procedures</h2>
 
@@ -277,7 +269,7 @@ The following set of procedures is defined:
 </p>
 
 <p>
-  Returns a list of three-elements lists of the
+  Returns a list of three-element lists of the
   form <code>(<em>field-name</em> <em>accessor</em> <em>mutator</em>)</code>
   corresponding to the fields (excluding those of parent record-types)
   defined by the record-type, for
