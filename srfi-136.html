@@ -31,7 +31,11 @@ Extensible record types
   types. The basic problem that is solved by these record types is that
   they allow the user to introduce new types, disjoint from all existing
   types. The record type system described in this document is a
-  conservative extension to SRFI 9 and R7RS-small record types that is intended to
+  conservative extension to SRFI 9 and R7RS record types (in other words, the
+  keyword <code>define-record-type</code> defined in this specification
+  can serve as the equally named keyword from SRFI 9 and R7RS and can thus
+  be safely exported from <code>(srfi 9)</code> and <code>(scheme base)</code>)
+  that is intended to
   solve another fundamental problem, namely the introduction of subtypes.
 </p>
 
@@ -84,8 +88,23 @@ the record type has to be defined and used.
 </p>
 
 <p>
+  This SRFI differs from related specifications like SRFI 131 in that it
+  does not rely on the identity of field names in order to specify a constructor
+  for record-subtypes. In SRFI 136, parent fields in a constructor specification
+  are solely referred to by position. On the other hand, there hasn't been reached a
+  consensus by the community yet whether parent field names in SRFI 131 are matched as
+  symbols or identifiers (or rather whether the former is compatible with the semantics of
+  R7RS). In fact, the main reason for developing SRFI 136 was that it is mostly agnostic
+  to whether field names are symbols or identifiers.
+</p>
+
+<p>
+  Thus, SRFI 136 follows the R6RS's record system in that regard.
+</p>
+
+<p>
   Without any further extension by further SRFIs or further revisions of R7RS,
-  it makes the following guarantees:
+  the syntactic interface makes the following guarantees:
 </p>
 <ul>
   <li>An immutable field of a parent record type remains immutable in its subtypes.</li>
@@ -94,6 +113,7 @@ the record type has to be defined and used.
   <li>Subtypes cannot overwrite parent fields.</li>
 </ul>
 
+<p>
 This specification also provides a minimal procedural interface and very basic
 introspection facilities, on which more sophisticated systems like the one
 specified by SRFI 99 can be built. R7RS leaves it open whether the record type
@@ -103,6 +123,7 @@ at the expansion level, in this specification the choice of a syntactic represen
 as a keyword has been made. Due to this choice, the record type descriptor cannot serve
 as a descriptor for the record type in the procedural interface. The record-type predicate,
 which also uniquely describes a record-type, is used in the procedural interface instead.
+</p>
 
 <h1>Specification</h1>
 
@@ -123,7 +144,7 @@ This SRFI extends 7.1.6 of R7RS-small as follows:
         &lt;field spec&gt; ...)
 
  &lt;type spec&gt;  -&gt; &lt;type name&gt;
-                    -&gt; (&lt;type name&gt; &lt;parent&gt;)
+              -&gt; (&lt;type name&gt; &lt;parent&gt;)
 
  &lt;constructor spec&gt;
               -&gt; #f
@@ -160,7 +181,7 @@ This SRFI extends 7.1.6 of R7RS-small as follows:
   The record-type definition macro-expands into a cluster of definitions that:
 </p>
 <ul>
-  <li>define the <code>&lt;type name&gt;</code> as the record-type
+  <li>define a keyword <code>&lt;type name&gt;</code> as the record-type
     descriptor for the new record-type;</li>
   <li>defines a constructor for instances of the new record-type
     (unless the constructor spec is <code>#f</code>);</li>
@@ -170,6 +191,8 @@ This SRFI extends 7.1.6 of R7RS-small as follows:
   <li>defines an accessor for each field name;</li>
   <li>defines a mutator for each mutable field name</li>
 </ul>
+<p>The predicate (if defined) also serves as a placeholder for the record-type in the
+  procedural interface defined below.</p>
 
 <p>
 A record type definition extends R7RS-small with the following additional options:
@@ -223,6 +246,8 @@ Then the macro use <code>(&lt;type name&gt;
 <pre>
  (&lt;keyword&gt; &lt;datum&gt; ... &lt;parent&gt; &lt;field-spec&gt; ...)
 </pre>
+(If the record-type does not have a parent, <code>&lt;parent&gt;</code> is <code>#f</code>.)
+</p>
 
 <h2>Procedures</h2>
 
@@ -309,7 +334,8 @@ The following set of procedures is defined:
      &lt;field spec&gt; ...)
    predicate)
 </pre>
-  where the accessor and mutator names (if any) are effectively renamed to make them unique.    
+where the accessor and mutator names (if any) are effectively renamed to make them unique.
+Note that the newly bound predicate differs from any existing record-type predicate.
 </p>
 
 <p>
@@ -327,11 +353,31 @@ The following set of procedures is defined:
 
 <h1>Implementation</h1>
 
+<p>
 The sample implementation is given as an R7RS library, which only relies on the bindings
 exported by <code>(scheme base)</code>. In particular, it is implemented using only
 syntax-rules macros and does not rely on more sophisticated/less beautiful macro facilities.
+</p>
 
-<a href="srfi/136.sld">Source for the reference implementation.</a>
+<a href="srfi/136.sld">Source for the sample implementation.</a>
+
+<p>
+The sample implementation is accompanied with an implementation of SRFI 131 on top of the syntax
+and procedures defined in this SRFI. Using this implementation, SRFI 131 and
+SRFI 136 record-types can mutually inherit each other and can thus be mixed in a program.
+(Caveat: SRFI 131 matches field names
+as symbols while the provided sample implementation of SRFI 136 matches field names on the
+syntactic level as identifiers. Thus, SRFI 131 record-types can only reference fields of
+SRFI 136 parents in their constructors if they are not being renamed during macro expansion.)
+</p>
+
+<p>
+As the shape of constructors between SRFI 131 and SRFI 136 is incompatible, a SRFI 136 record-type
+with a SRFI 131 parent behaves as if the parent's constructor spec was given by a single identifier
+(that is without any field names as arguments).
+</p>
+
+<a href="srfi/131.sld">Source for the compatible SRFI 131 implementation.</a>
 
 <h1>Acknowledgements</h1>
 

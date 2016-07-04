@@ -20,8 +20,8 @@
 ;; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ;; SOFTWARE.
 
-(import (rename (srfi 136 test) (run-tests run-srfi-136-tests))
-	(rename (srfi 131 test) (run-tests run-srfi-131-tests)))
-
-(run-srfi-136-tests)
-(run-srfi-131-tests)
+(define-library (srfi 131)
+  (export define-record-type)
+  (import (scheme base)
+	  (rename (srfi 136) (define-record-type define-record-type/136)))
+  (include "131.scm"))
