@@ -65,8 +65,13 @@
      (define-record-type-helper2 parent-indices
        type-name (constructor-name . args) predicate-name field-spec ...
        parent parent-rtd parent-size parent-indices))
-    ((_ type-name constructor-name . rest)
-     (define-record-type-helper3 type-name (constructor-name) . rest))))
+    ((_ type-name constructor-name predicate-name
+	(field-name accessor . mutator*) ...
+	parent parent-rtd parent-size parent-indices)
+     (define-record-type-helper3 type-name (constructor-name field-name ...)
+       predicate-name
+       (field-name accessor . mutator*) ...
+       parent parent-rtd parent-size parent-indices))))
 
 (define-syntax define-record-type-helper2
   (syntax-rules ()
@@ -197,6 +202,8 @@
   
 (define (make-constructor rtd size indices)
   (lambda args
+    (unless (= (length args) (length indices))
+      (error "unsupported number of arguments in constructor call"))    
     (let* ((fields (make-vector size))
 	   (record (%make-record rtd fields)))
       (for-each

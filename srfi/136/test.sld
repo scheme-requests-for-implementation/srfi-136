@@ -206,5 +206,16 @@
 			  (bar child)
 			  (foo child))))
 
+      (test-equal "Constructor name in subrecord-type"
+		  '(#t 3 4)
+		  (let ()
+		    (define-record-type foo (make-foo a b) foo?
+		      (a foo-a)
+		      (b foo-b))
+		    (define-record-type (bar foo) make-bar bar?
+		      (c bar-a)
+		      (d bar-b))
+		    (define record (make-bar 1 2 3 4))
+		    (list (bar? record) (bar-a record) (bar-b record))))
 		  
       (test-end "Extensible record types"))))
