@@ -353,11 +353,31 @@ Note that the newly bound predicate differs from any existing record-type predic
 
 <h1>Implementation</h1>
 
+<p>
 The sample implementation is given as an R7RS library, which only relies on the bindings
 exported by <code>(scheme base)</code>. In particular, it is implemented using only
 syntax-rules macros and does not rely on more sophisticated/less beautiful macro facilities.
+</p>
 
-<a href="srfi/136.sld">Source for the reference implementation.</a>
+<a href="srfi/136.sld">Source for the sample implementation.</a>
+
+<p>
+The sample implementation is accompanied with an implementation of SRFI 131 on top of the syntax
+and procedures defined in this SRFI. Using this implementation, SRFI 131 and
+SRFI 136 record-types can mutually inherit each other and can thus be mixed in a program.
+(Caveat: SRFI 131 matches field names
+as symbols while the provided sample implementation of SRFI 136 matches field names on the
+syntactic level as identifiers. Thus, SRFI 131 record-types can only reference fields of
+SRFI 136 parents in their constructors if they are not being renamed during macro expansion.)
+</p>
+
+<p>
+As the shape of constructors between SRFI 131 and SRFI 136 is incompatible, a SRFI 136 record-type
+with a SRFI 131 parent behaves as if the parent's constructor spec was given by a single identifier
+(that is without any field names as arguments).
+</p>
+
+<a href="srfi/131.sld">Source for the compatible SRFI 131 implementation.</a>
 
 <h1>Acknowledgements</h1>
 
