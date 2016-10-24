@@ -20,6 +20,11 @@
 ;; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ;; SOFTWARE.
 
+(define-syntax rtd
+  (syntax-rules ()
+    ((rtd (<child> <parent>)) (<child>))
+    ((rtd <record>) (<record>))))
+
 (define-syntax define-record-type
   (syntax-rules ()
     ((_ type-spec constructor-spec
@@ -36,7 +41,7 @@
        (define-record-type/136 type-spec constructor-name/136
 	 predicate-spec (field accessor . mutator*) ...)
        (define constructor-name
-	 (make-constructor/131 predicate-spec
+	 (make-constructor/131 (rtd type-spec)
 			       '(field-name ...)))))
     ((_ type-spec constructor-name
 	predicate-spec (field accessor . mutator*) ...)
@@ -44,14 +49,14 @@
        (define-record-type/136 type-spec constructor-name/136
 	 predicate-spec (field accessor . mutator*) ...)
        (define constructor-name
-	 (make-constructor/131 predicate-spec #f))))))
+	 (make-constructor/131 (rtd type-spec) #f))))))
 
-(define (make-constructor/131 predicate field-names)
+(define (make-constructor/131 rtd field-names)
   (if field-names
-      (let loop ((p predicate) (fields '()))
-	(if p
-	    (loop (record-type-parent p)
-		  (append (map car (record-type-fields p)) fields))
+      (let loop ((r rtd) (fields '()))
+	(if r
+	    (loop (record-type-parent r)
+		  (append (map car (record-type-fields r)) fields))
 	    (let ((indices
 		   (map (lambda (field-name)
 			  (let loop ((fields fields) (index 0))
@@ -70,6 +75,6 @@
 		  (for-each (lambda (arg index)
 			      (vector-set! field-vector index arg))
 			    args indices)
-		  (make-record predicate field-vector))))))
+		  (make-record rtd field-vector))))))
       (lambda args
-	(make-record predicate (list->vector args)))))
+	(make-record rtd (list->vector args)))))

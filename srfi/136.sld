@@ -22,14 +22,17 @@
 
 (define-library (srfi 136)
   (import (rename (scheme base)
-		  (define-record-type scheme-define-record-type)))
+		  (define-record-type scheme-define-record-type))
+	  (srfi 137))
   (export define-record-type
+	  record-type-descriptor?
 	  record?
+	  record-type-descriptor
 	  record-type-predicate
 	  record-type-name
 	  record-type-parent
 	  record-type-fields
-	  make-record-type-predicate
+	  make-record-type-descriptor
 	  make-record)
   (include "136.scm"))
 

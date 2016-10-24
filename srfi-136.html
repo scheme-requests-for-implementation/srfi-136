@@ -17,7 +17,15 @@ Extensible record types
 
 <H1>Status</H1>
 
-<p>This SRFI is currently in <em>draft</em> status. Here is <a href="http://srfi.schemers.org/srfi-process.html">an explanation</a> of each status that a SRFI can hold.  To provide input on this SRFI, please send email to <code><a href="mailto:srfi+minus+136+at+srfi+dotschemers+dot+org">srfi-136@<span class="antispam">nospam</span>srfi.schemers.org</a></code>.  To subscribe to the list, follow <a href="http://srfi.schemers.org/srfi-list-subscribe.html">these instructions</a>.  You can access previous messages via the mailing list <a href="http://srfi-email.schemers.org/srfi-136">archive</a>.</p>
+<p>This SRFI is currently in <em>draft</em> status. Here
+is <a href="http://srfi.schemers.org/srfi-process.html">an
+explanation</a> of each status that a SRFI can hold.  To provide input
+on this SRFI, please send email
+to <code><a href="mailto:srfi+minus+136+at+srfi+dotschemers+dot+org">srfi-136@<span class="antispam">nospam</span>srfi.schemers.org</a></code>.
+To subscribe to the list,
+follow <a href="http://srfi.schemers.org/srfi-list-subscribe.html">these
+instructions</a>.  You can access previous messages via the mailing
+list <a href="http://srfi-email.schemers.org/srfi-136">archive</a>.</p>
 <ul>
   <li>Received: 2016/6/23</li>
   <li>60-day deadline: 2016/8/23</li>
@@ -115,15 +123,18 @@ the record type has to be defined and used.
 </ul>
 
 <p>
-This specification also provides a minimal procedural interface and very basic
-introspection facilities, on which more sophisticated systems like the one
-specified by SRFI 99 can be built. R7RS leaves it open whether the record type
-descriptor is bound by a record-type definition to a runtime object or a syntactic
-representation. In order to be able to provide introspection facilities already
-at the expansion level, in this specification the choice of a syntactic representation
-as a keyword has been made. Due to this choice, the record type descriptor cannot serve
-as a descriptor for the record type in the procedural interface. The record-type predicate,
-which also uniquely describes a record-type, is used in the procedural interface instead.
+This specification also provides a minimal procedural interface and
+very basic introspection facilities, on which more sophisticated
+systems like the one specified by SRFI 99 can be built. R7RS leaves it
+open whether the record type descriptor is bound by a record-type
+definition to a runtime object or a syntactic representation. In order
+to be able to provide introspection facilities already at the
+expansion level, in this specification the choice of a syntactic
+representation as a keyword has been made. Due to this choice, the
+record type descriptor cannot serve as a descriptor for the record
+type in the procedural interface.  However, a <em>runtime record-type
+descriptor</em> can be extracted from the keyword to be used in the
+procedural interface.
 </p>
 
 <h1>Specification</h1>
@@ -171,6 +182,7 @@ This SRFI extends 7.1.6 of R7RS-small as follows:
                     -&gt; #f
  
  &lt;macro use&gt;        -&gt; (&lt;type name&gt; (&lt;keyword&gt; &lt;datum&gt; ...))
+                    -&gt; (&lt;type name&gt;)
 </pre>
 
 <p>
@@ -192,8 +204,8 @@ This SRFI extends 7.1.6 of R7RS-small as follows:
   <li>defines an accessor for each field name;</li>
   <li>defines a mutator for each mutable field name</li>
 </ul>
-<p>The predicate (if defined) also serves as a placeholder for the record-type in the
-  procedural interface defined below.</p>
+<p>From the keyword that is bound to the record-type descriptor, a runtime representation for the
+  use in procedural interface defined below can be extracted.</p>
 
 <p>
 A record type definition extends R7RS-small with the following additional options:
@@ -249,6 +261,9 @@ Then the macro use <code>(&lt;type name&gt;
 </pre>
 (If the record-type does not have a parent, <code>&lt;parent&gt;</code> is <code>#f</code>.)
 </p>
+Furthermore, the macro use <code>(&lt;type name&gt;)</code>
+macro-expands into an object that serves as a runtime record-type
+descriptor for the procedural interface (see below).
 
 <h2>Procedures</h2>
 
@@ -264,34 +279,56 @@ The following set of procedures is defined:
 </p>
 
 <p>
-  <code>(record-type-predicate <em>record</em>)</code>
+  <code>(record-type-descriptor? <em>obj</em>)</code>
 </p>
 
 <p>
-  Returns the type predicate of the record type of the record <code><em>record</em></code>
-  or <code>#f</code> if none is defined.
+  Returns <code>#t</code> if and only if <code><em>obj</em></code> is
+  a runtime record-type descriptor.
 </p>
 
 <p>
-  <code>(record-type-name <em>predicate</em>)</code>
+  <code>(record-type descriptor <em>record</em>)</code>
 </p>
 
 <p>
-  Returns the name of the record-type, for which <code><em>predicate</em></code> is the type
-  predicate, as a symbol.
+  Returns the runtime record-type descriptor of the record type of the
+  record <code></em>record</em></code>.
 </p>
 
 <p>
-  <code>(record-type-parent <em>predicate</em>)</code>
+  <code>(record-type-predicate <em>rtd</em>)</code>
 </p>
 
 <p>
-  Returns the type predicate of the parent of the record-type, for which
-  <code><em>predicate</em></code> is the type predicate, or <code>#f</code> if there is no parent.
+  Returns the type predicate of the record type, for
+  which <code><em>rtd</em></code> is the runtime record-type
+  descriptor.
 </p>
 
 <p>
-  <code>(record-type-fields <em>predicate</em>)</code>
+  <code>(record-type-name <em>rtd</em>)</code>
+</p>
+
+<p>
+  Returns the name of the record-type, for
+  which <code><em>rtd</em></code> is the runtime record-type
+  descriptor, as a symbol.
+</p>
+
+<p>
+  <code>(record-type-parent <em>rtd</em>)</code>
+</p>
+
+<p>
+  Returns the runtime record-type descriptor of the parent of the
+  record-type, for which
+  <code><em>rtd</em></code> is the runtime record-type descriptor,
+  or <code>#f</code> if there is no parent.
+</p>
+
+<p>
+  <code>(record-type-fields <em>rtd</em>)</code>
 </p>
 
 <p>
@@ -299,7 +336,7 @@ The following set of procedures is defined:
   form <code>(<em>field-name</em> <em>accessor</em> <em>mutator</em>)</code>
   corresponding to the fields (excluding those of parent record-types)
   defined by the record-type, for
-  which <code><em>predicate</em></code> is the type predicate, such
+  which <code><em>rtd</em></code> is the runtime record-type descriptor, such
   that:
   <ul>
     <li><code><em>field name</em></code> is the name of the field as a symbol or
@@ -311,42 +348,46 @@ The following set of procedures is defined:
 </p>
 
 <p>
-  <code>(make-record-type-predicate <em>name</em> <em>fieldspecs</em>)</code>
+  <code>(make-record-type-descriptor <em>name</em> <em>fieldspecs</em>)</code>
 <p>
 
 <p>
-  <code>(make-record-type-predicate <em>name</em> <em>fieldspecs</em> <em>parent</em>)</code>
+  <code>(make-record-type-descriptor <em>name</em> <em>fieldspecs</em> <em>parent</em>)</code>
 <p>
   
 <p>
-  If <code><em>name</em></code> evaluates to a symbol <code>'&lt;type name&gt;</code>
-  and <code><em>parent</em></code> evaluates to the type predicate of a record type definition of
+  If <code><em>name</em></code> evaluates to a symbol <code>'&lt;type
+  name&gt;</code> and <code><em>parent</em></code> evaluates to the
+  runtime record-type descriptor of a record type definition of
   <code>&lt;parent&gt;</code> (if the argument <code><em>parent</em></code> is omitted,
   <code>&lt;parent&gt;</code> defaults to <code>#f</code>),  
   and <code><em>fieldspecs</em></code> evaluates to a list <code>'(&lt;field spec&gt; ...)</code>,
   the application
-  <code>(make-record-type-predicate <em>name</em> <em>fieldspecs</em> <em>parent</em>)</code>
+  <code>(make-record-type-descriptor <em>name</em> <em>fieldspecs</em> <em>parent</em>)</code>
   evaluates to
 <pre>
  (let ()
    (define-record-type (&lt;type name&gt; &lt;parent&gt;)
      #f
-     predicate
+     #f
      &lt;field spec&gt; ...)
-   predicate)
+   (&lt;type name&gt;))
 </pre>
-where the accessor and mutator names (if any) are effectively renamed to make them unique.
-Note that the newly bound predicate differs from any existing record-type predicate.
+where the accessor and mutator names (if any) are effectively renamed
+to make them unique.  Note that the newly bound runtime record type
+descriptor differs from any existing runtime record-type descriptor.
 </p>
 
 <p>
-  <code>(make-record <em>predicate</em> <em>field-vector</em>)</code>
+  <code>(make-record <em>rtd</em> <em>field-vector</em>)</code>
 <p>
 
 <p>
-  Returns an instance of the record type, for which <code><em>predicate</em></code> is the
-  record-type predicate, whose fields (including those of parent record-types with the fields of
-  parent record-types coming first) are initialized with the objects in the vector
+  Returns an instance of the record type, for
+  which <code><em>rtd</em></code> is the runtime record-type
+  descriptor, whose fields (including those of parent record-types
+  with the fields of parent record-types coming first) are initialized
+  with the objects in the vector
   <em>field-vector</em> in order. It is an error if the <em>field-vector</em> does not have as
   many elements as there are fields. It is unspecified whether the vector is shared with
   the newly created record.
