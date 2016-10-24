@@ -22,7 +22,8 @@
 
 (define-library (srfi 136)
   (import (rename (scheme base)
-		  (define-record-type scheme-define-record-type)))
+		  (define-record-type scheme-define-record-type))
+	  (srfi 137))
   (export define-record-type
 	  record-type-descriptor?
 	  record?

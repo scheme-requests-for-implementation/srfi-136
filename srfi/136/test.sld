@@ -231,5 +231,5 @@
 		      (d bar-b))
 		    (define record (make-bar 1 2 3 4))
 		    (list (bar? record) (bar-a record) (bar-b record))))
-		  
+
       (test-end "Extensible record types"))))
