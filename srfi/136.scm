@@ -20,9 +20,11 @@
 ;; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ;; SOFTWARE.
 
-;;; Sentinel location
+;;; Sentinel
 
-(define <secret> #(#f))
+(define-syntax <secret>
+  (syntax-rules ()
+    ((_) (syntax-error "invalid use of auxiliary syntax" <secret>))))
 
 ;;; Syntax
 
@@ -37,8 +39,9 @@
 	  (keyword datum (... ...) parent field-spec ...))
 	 ((_ <secret> (k (... ...)))
 	  (k (... ...) rtd size indices))
+	 ((_) rtd)
 	 ((_ . _)
-	  (syntax-error "invalid use of record type descriptor")))))))
+	  (syntax-error "invalid use of record type descriptor" type-name)))))))
 
 (define-record-type-descriptor root
   #f 0 () #f ())
@@ -184,9 +187,9 @@
 
 ;;; Foundation
 
-(scheme-define-record-type <rtd>
+(scheme-define-record-type <record-type-descriptor>
   (make-rtd name fieldspecs accessors mutators)
-  rtd?
+  record-type-descriptor?
   (name rtd-name)
   (fieldspecs rtd-fieldspecs)
   (accessors rtd-accessors)
@@ -214,11 +217,9 @@
 
 (define (make-predicate rtd)
   (lambda (obj)
-    (if (eq? <secret> obj)
-	rtd
-	(and (record? obj)
-	     (memq rtd (rtd-ancestors (record-rtd obj)))
-	     #t))))
+    (and (record? obj)
+	 (memq rtd (rtd-ancestors (record-rtd obj)))
+	 #t)))
 
 (define (make-accessor index)
   (lambda (record)
@@ -230,36 +231,38 @@
 
 ;;; Procedural interface
 
-(define (record-type-predicate record)
-  (rtd-predicate (record-rtd record)))
+(define (record-type-descriptor record)
+  (record-rtd record))
 
-(define (record-type-name predicate)
-  (rtd-name (predicate <secret>)))
+(define (record-type-predicate rtd)
+  (rtd-predicate rtd))
 
-(define (record-type-parent predicate)
-  (let ((ancestors (rtd-ancestors (predicate <secret>))))
+(define (record-type-name rtd)
+  (rtd-name rtd))
+
+(define (record-type-parent rtd)
+  (let ((ancestors (rtd-ancestors rtd)))
     (and (not (null? (cdr ancestors)))
-	 (rtd-predicate (cadr ancestors)))))
+	 (cadr ancestors))))
 
-(define (record-type-fields predicate)
-  (let ((rtd (predicate <secret>)))
-    (let loop ((fieldspecs (rtd-fieldspecs rtd))
-	       (accessors (rtd-accessors rtd))
-	       (mutators (rtd-mutators rtd)))
-      (cond
-       ((null? fieldspecs)
-	'())
-       ((= (length (car fieldspecs)) 3)
-	(cons (list (caar fieldspecs) (car accessors) (car mutators))
-	      (loop (cdr fieldspecs) (cdr accessors) (cdr mutators))))
-       (else
-	(cons (list (caar fieldspecs) (car accessors) #f)
-	      (loop (cdr fieldspecs) (cdr accessors) (cdr mutators))))))))
+(define (record-type-fields rtd)
+  (let loop ((fieldspecs (rtd-fieldspecs rtd))
+	     (accessors (rtd-accessors rtd))
+	     (mutators (rtd-mutators rtd)))
+    (cond
+     ((null? fieldspecs)
+      '())
+     ((= (length (car fieldspecs)) 3)
+      (cons (list (caar fieldspecs) (car accessors) (car mutators))
+	    (loop (cdr fieldspecs) (cdr accessors) (cdr mutators))))
+     (else
+      (cons (list (caar fieldspecs) (car accessors) #f)
+	    (loop (cdr fieldspecs) (cdr accessors) (cdr mutators)))))))
 
-(define (make-record-type-predicate name fieldspecs . parent*)
+(define (make-record-type-descriptor name fieldspecs . parent*)
   (let*
       ((parent-rtd
-	(and (not (null? parent*)) ((car parent*) <secret>)))
+	(and (not (null? parent*)) (car parent*)))
        (parent-size
 	(if parent-rtd (length (rtd-fieldspecs parent-rtd)) 0))
        (accessors 
@@ -280,7 +283,7 @@
     (rtd-set-ancestors! rtd (cons rtd (if parent-rtd
 					  (rtd-ancestors parent-rtd)
 					  '())))
-    predicate))
+    rtd))
 
-(define (make-record predicate field-vector)
-  (%make-record (predicate <secret>) field-vector))
+(define (make-record rtd field-vector)
+  (%make-record rtd field-vector))

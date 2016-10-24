@@ -24,12 +24,14 @@
   (import (rename (scheme base)
 		  (define-record-type scheme-define-record-type)))
   (export define-record-type
+	  record-type-descriptor?
 	  record?
+	  record-type-descriptor
 	  record-type-predicate
 	  record-type-name
 	  record-type-parent
 	  record-type-fields
-	  make-record-type-predicate
+	  make-record-type-descriptor
 	  make-record)
   (include "136.scm"))
 

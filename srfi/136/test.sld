@@ -142,6 +142,13 @@
 				  (<record> (k))))
 		      (list field-symbol (accessor record)))))
 
+      (test-assert "Runtime record-type descriptors"
+	           (let ()
+                     (define-record-type <record>
+		       (make-foo)
+		       foo?)
+		     (record-type-descriptor? (<record>))))
+	  
       (test-equal "Predicate for records"
 		  '(#t #f)
 		  (let ()
@@ -151,12 +158,19 @@
 		    (list (record? (make-foo))
 			  (record? (vector)))))
 
+      (test-assert "Runtime record-type descriptor from instance"
+                   (let ()
+		     (define-record-type <record>
+		       (make-record)
+			record?)
+		     (eq? (record-type-descriptor (make-record)) (<record>))))
+	        
       (test-assert "Record-type predicate"
 		   (let ()
 		     (define-record-type <record>
 		       (make-record)
 		       record?)
-		     (eq? (record-type-predicate (make-record)) record?)))
+		     (eq? (record-type-predicate (<record>)) record?)))
 		   
       (test-equal "Introspection of record-type name"
 		  '<record>
@@ -164,7 +178,7 @@
 		    (define-record-type <record>
 		      (make-record)
 		      record?)
-		    (record-type-name record?)))
+		    (record-type-name (<record>))))
 
       (test-assert "Introspection of record-type parent"
 		   (let ()
@@ -174,7 +188,7 @@
 		     (define-record-type (<child> <parent>)
 		       #f
 		       child?)
-		     (eq? (record-type-parent child?) parent?)))
+		     (eq? (record-type-parent (<child>)) (<parent>))))
 
       (test-equal "Introspection of record-type fields"
 		  '(foo 2)
@@ -185,7 +199,7 @@
 		      (foo foo)
 		      (bar bar set-bar!))
 		    (define-values (field-foo field-bar)
-		      (apply values (record-type-fields record?)))
+		      (apply values (record-type-fields (<record>))))
 		    (define record (make-record 1))
 		    ((list-ref field-bar 2) record 2)
 		    (list (list-ref field-foo 0) (bar record))))
@@ -197,11 +211,11 @@
 		      #f
 		      parent?
 		      (bar bar))
-		    (define child? (make-record-type-predicate '<child>
-							       '((foo foo))
-							       parent?))
-		    (define child (make-record child? #(1 2)))
-		    (define foo (list-ref (car (record-type-fields child?)) 1))
+		    (define child-rtd (make-record-type-descriptor '<child>
+								   '((foo foo))
+								   (<parent>)))
+		    (define child (make-record child-rtd #(1 2)))
+		    (define foo (list-ref (car (record-type-fields child-rtd)) 1))
 		    (list (parent? child)
 			  (bar child)
 			  (foo child))))
