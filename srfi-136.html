@@ -181,7 +181,13 @@ This SRFI extends 7.1.6 of R7RS-small as follows:
  &lt;mutator name&gt;     -&gt; &lt;identifier&gt;
  &lt;field name&gt;       -&gt; &lt;identifier&gt;
                     -&gt; #f
- 
+</pre>
+
+<p>
+It also extends 7.1.3 of R7RS-small as follows:
+</p>
+
+<pre>
  &lt;macro use&gt;        -&gt; (&lt;type name&gt; (&lt;keyword&gt; &lt;datum&gt; ...))
                     -&gt; (&lt;type name&gt;)
 </pre>
@@ -195,7 +201,7 @@ This SRFI extends 7.1.6 of R7RS-small as follows:
   The record-type definition macro-expands into a cluster of definitions that:
 </p>
 <ul>
-  <li>define a keyword <code>&lt;type name&gt;</code> as the record-type
+  <li>defines a keyword <code>&lt;type name&gt;</code> as the record-type
     descriptor for the new record-type;</li>
   <li>defines a constructor for instances of the new record-type
     (unless the constructor spec is <code>#f</code>);</li>
@@ -236,13 +242,15 @@ A record type definition extends R7RS-small with the following additional option
     takes <em>n</em> arguments (if there is no parent constructor, the
     constructor of the parent's parent is considered, and so on)</code>:</p>
 <ul>
-  <li>The first <em>n</em> field names are arbitrary identifiers, which correspond to arguments
-    of the parent's constructor. (While it is not strictly necessary to name these identifiers after
-    the identifiers used in the parent's constructor, it will certainly help readability of the
-    source.) The other arguments
-    correspond to field names or accessor names (field names take precedence) declared in the
-    same <code>define-record-type</code> form. (Here, an argument corresponds to an accessor name
-    as if it was a variable reference corresponding to a variable.)</li>
+  <li>The first <em>n</em> field names are arbitrary identifiers,
+    which correspond to arguments of the parent's constructor. (While
+    it is not strictly necessary to name these identifiers after the
+    identifiers used in the parent's constructor, it will certainly
+    help readability of the source.) The other arguments correspond to
+    field names or accessor names (field names take precedence)
+    declared in the same <code>define-record-type</code> form. (Here,
+    an argument corresponds to an accessor name as if it was a
+    variable reference corresponding to a variable.)</li>
   <li>It is an error if the same identifier appears more than once in
     the field names of the constructor spec.</li>
 </ul>
@@ -263,8 +271,20 @@ Then the macro use <code>(&lt;type name&gt;
 (If the record-type does not have a parent, <code>&lt;parent&gt;</code> is <code>#f</code>.)
 </p>
 Furthermore, the macro use <code>(&lt;type name&gt;)</code>
-macro-expands into an object that serves as a runtime record-type
-descriptor for the procedural interface (see below).
+macro-expands into an expression that evaluates to an object that
+serves as a runtime record-type descriptor for the procedural
+interface (see below).
+
+<p>
+  <i>Rationale: This allows the introspection of the record type at
+  macro-expansion type.  The arguments <code>&lt;keyword&gt;</code>
+  and <code>&lt;datum&gt;</code> are to support CPS-techniques in
+  macro programming.  For example, a pattern matcher written
+  using <code>syntax-rules</code> can support matching of record
+  instances and can get hold of the record-type structure at
+  macro-expansion time by using the macro <code>(&lt;type name&gt;
+  (&lt;keyword&gt; &lt;datum&gt; ...)) </i>
+</p>
 
 <h2>Procedures</h2>
 
@@ -289,7 +309,7 @@ The following set of procedures is defined:
 </p>
 
 <p>
-  <code>(record-type descriptor <em>record</em>)</code>
+  <code>(record-type-descriptor <em>record</em>)</code>
 </p>
 
 <p>
@@ -357,12 +377,12 @@ The following set of procedures is defined:
 <p>
   
 <p>
-  If <code><em>name</em></code> evaluates to a symbol <code>'&lt;type
+  If <code><em>name</em></code> evaluates to a symbol <code>&lt;type
   name&gt;</code> and <code><em>parent</em></code> evaluates to the
   runtime record-type descriptor of a record type definition of
   <code>&lt;parent&gt;</code> (if the argument <code><em>parent</em></code> is omitted,
   <code>&lt;parent&gt;</code> defaults to <code>#f</code>),  
-  and <code><em>fieldspecs</em></code> evaluates to a list <code>'(&lt;field spec&gt; ...)</code>,
+  and <code><em>fieldspecs</em></code> evaluates to a list <code>(&lt;field spec&gt; ...)</code>,
   the application
   <code>(make-record-type-descriptor <em>name</em> <em>fieldspecs</em> <em>parent</em>)</code>
   evaluates to

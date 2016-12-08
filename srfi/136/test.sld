@@ -88,7 +88,7 @@
 		      (make-parent foo)
 		      #f
 		      (foo foo))
-		    (define-record-type (<child> <parent>)
+		    (define-record-type (<child-type> <parent>)
 		      make-child
 		      child?)
 		    (define child (make-child 1))
@@ -232,4 +232,23 @@
 		    (define record (make-bar 1 2 3 4))
 		    (list (bar? record) (bar-a record) (bar-b record))))
 
+      (test-assert "Middle record type has no constructor and two more fields"	
+		   (let ()
+		     (define-record-type <base> (make-base) base?)
+		     (define-record-type (<middle> <base>)
+		       #f
+		       middle?
+		       (a middle-a middle-a-set!) (b middle-b middle-b-set!))
+		     (define-record-type (<leaf> <middle>)
+		       (make-leaf d) leaf? (d leaf-d))
+		     'ok))
+
+      (test-assert "Type with unnamed field and no constructor"
+		   (let ()
+		     (define-record-type <simple>
+		       #f
+		       simple?
+		       (#f foo set-foo!))
+		     'ok))  
+      
       (test-end "Extensible record types"))))
