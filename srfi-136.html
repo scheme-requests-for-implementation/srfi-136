@@ -270,8 +270,9 @@ Then the macro use <code>(&lt;type name&gt;
 (If the record-type does not have a parent, <code>&lt;parent&gt;</code> is <code>#f</code>.)
 </p>
 Furthermore, the macro use <code>(&lt;type name&gt;)</code>
-macro-expands into an object that serves as a runtime record-type
-descriptor for the procedural interface (see below).
+macro-expands into an expression that evaluates to an object that
+serves as a runtime record-type descriptor for the procedural
+interface (see below).
 
 <p>
   <i>Rationale: This allows the introspection of the record type at

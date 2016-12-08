@@ -57,9 +57,6 @@
 
 (define-syntax define-record-type-helper1
   (syntax-rules ()
-    ((_ type-name #f . rest)
-     (define-record-type-helper1
-       type-name constructor-name . rest))
     ((_ type-name constructor #f . rest)
      (define-record-type-helper1
        type-name constructor predicate-name . rest))
@@ -67,6 +64,13 @@
 	parent parent-rtd parent-size parent-indices)
      (define-record-type-helper2 parent-indices
        type-name (constructor-name . args) predicate-name field-spec ...
+       parent parent-rtd parent-size parent-indices))
+    ((_ type-name #f predicate-name
+	(field-name accessor . mutator*) ...
+	parent parent-rtd parent-size parent-indices)
+     (define-record-type-helper3 type-name (constructor-name)
+       predicate-name
+       (field-name accessor . mutator*) ...
        parent parent-rtd parent-size parent-indices))
     ((_ type-name constructor-name predicate-name
 	(field-name accessor . mutator*) ...
