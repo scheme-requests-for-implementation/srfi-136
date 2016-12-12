@@ -283,7 +283,7 @@ interface (see below).
   using <code>syntax-rules</code> can support matching of record
   instances and can get hold of the record-type structure at
   macro-expansion time by using the macro <code>(&lt;type name&gt;
-  (&lt;keyword&gt; &lt;datum&gt; ...)) </i>
+  (&lt;keyword&gt; &lt;datum&gt; ...))</code></i>
 </p>
 
 <h2>Procedures</h2>
@@ -322,7 +322,7 @@ The following set of procedures is defined:
 </p>
 
 <p>
-  Returns the type predicate of the record type, for
+  Returns a type predicate of the record type, for
   which <code><em>rtd</em></code> is the runtime record-type
   descriptor.
 </p>
@@ -362,8 +362,8 @@ The following set of procedures is defined:
   <ul>
     <li><code><em>field name</em></code> is the name of the field as a symbol or
       <code>#f</code> if it is unnamed;</li>
-    <li><code><em>accessor</em></code> is the accessor defined for the field;</li>
-    <li><code><em>mutator</em></code> is the mutator defined for the field if it is mutable and
+    <li><code><em>accessor</em></code> is an accessor defined for the field;</li>
+    <li><code><em>mutator</em></code> is a mutator defined for the field if it is mutable and
       <code>#f</code> otherwise.</li>
   </ul>
 </p>

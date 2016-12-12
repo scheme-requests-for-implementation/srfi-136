@@ -170,7 +170,7 @@
 		     (define-record-type <record>
 		       (make-record)
 		       record?)
-		     (eq? (record-type-predicate (<record>)) record?)))
+		     ((record-type-predicate (<record>)) (make-record))))
 		   
       (test-equal "Introspection of record-type name"
 		  '<record>
