@@ -285,7 +285,7 @@ interface (see below).
   using <code>syntax-rules</code> can support matching of record
   instances and can get hold of the record-type structure at
   macro-expansion time by using the macro <code>(&lt;type name&gt;
-  (&lt;keyword&gt; &lt;datum&gt; ...)) </i>
+  (&lt;keyword&gt; &lt;datum&gt; ...))</code></i>
 </p>
 
 <h2>Procedures</h2>
@@ -324,7 +324,7 @@ The following set of procedures is defined:
 </p>
 
 <p>
-  Returns the type predicate of the record type, for
+  Returns a type predicate of the record type, for
   which <code><em>rtd</em></code> is the runtime record-type
   descriptor.
 </p>
@@ -364,8 +364,8 @@ The following set of procedures is defined:
   <ul>
     <li><code><em>field name</em></code> is the name of the field as a symbol or
       <code>#f</code> if it is unnamed;</li>
-    <li><code><em>accessor</em></code> is the accessor defined for the field;</li>
-    <li><code><em>mutator</em></code> is the mutator defined for the field if it is mutable and
+    <li><code><em>accessor</em></code> is an accessor defined for the field;</li>
+    <li><code><em>mutator</em></code> is a mutator defined for the field if it is mutable and
       <code>#f</code> otherwise.</li>
   </ul>
 </p>
@@ -383,8 +383,14 @@ The following set of procedures is defined:
   name&gt;</code> and <code><em>parent</em></code> evaluates to the
   runtime record-type descriptor of a record type definition of
   <code>&lt;parent&gt;</code> (if the argument <code><em>parent</em></code> is omitted,
-  <code>&lt;parent&gt;</code> defaults to <code>#f</code>),  
-  and <code><em>fieldspecs</em></code> evaluates to a list <code>(&lt;field spec&gt; ...)</code>,
+  <code>&lt;parent&gt;</code> defaults to <code>#f</code>),
+  and <code><em>fieldspecs</em></code> evaluates to a list of field
+  specifiers, where each field specifier is either a
+  <ul>
+    <li>a symbol naming the (mutable) field,</li>
+    <li>a list of the form <code>(mutable <em>name</em>)</code>, or</li>
+    <li>a list of the form <code>(immutable <em>name</em>)</code>,</li>      
+  </ul>
   the application
   <code>(make-record-type-descriptor <em>name</em> <em>fieldspecs</em> <em>parent</em>)</code>
   evaluates to
@@ -396,8 +402,25 @@ The following set of procedures is defined:
      &lt;field spec&gt; ...)
    (&lt;type name&gt;))
 </pre>
-where the accessor and mutator names (if any) are effectively renamed
-to make them unique.  Note that the newly bound runtime record type
+where each <code>&lt;field spec&gt;</code> corresponds to a
+field specifier in <code><em>fieldspecs</em></code> as follows:
+<ul>
+  <li>If the
+    field specifier is a symbol <code><em>name</em></code> or a list of
+    the form <code>(mutable <em>name</em>)</code>, the
+    corresponding <code>&lt;field spec&gt;</code>
+    is <code>(<em>name</em> <em>accessor</em> <em>mutator</em>)</code>,
+    where <em>accessor</em> and <em>mutator</em> are fresh symbols
+  </li>
+  <li>
+    If the field specifier is of the form
+    <code>(immutable <em>name</em>)</code>, the
+    corresponding <code>&lt;field spec&gt;</code>
+    is <code>(<em>name</em> <em>accessor</em>)</code>,
+    where <em>accessor</em> is a fresh symbol.
+  </li>
+</ul>
+Note that the newly bound runtime record type
 descriptor differs from any existing runtime record-type descriptor.
 </p>
 
@@ -442,6 +465,11 @@ with a SRFI 131 parent behaves as if the parent's constructor spec was given by 
 (that is without any field names as arguments).
 </p>
 
+<p>
+  For demonstration purposes of SRFI 137, the provided sample
+  implementation for SRFI 136 builds upon that SRFI 137.
+</p>
+
 <a href="srfi/131.sld">Source for the compatible SRFI 131 implementation.</a>
 
 <h1>Acknowledgements</h1>
@@ -450,6 +478,18 @@ with a SRFI 131 parent behaves as if the parent's constructor spec was given by 
 Credit goes to all members of the Scheme Working Group 2, who
 participated in the discussion of record types in R7RS-large. Quite a lot of
 wording was copied verbatim from SRFI 131.
+</p>
+
+<p>
+The author of this SRFI would also like to thank Sudarshan S Chawathe, Takashi Kato, and
+Jim Rees, whose participation on the mailing list
+was very helpful in bringing this SRFI into final shape.
+</p>
+
+<p>
+Finally, the whole process of bringing this SRFI into life wouldn't
+have happened without the encouragement by John Cowen and the support
+of Arthur A. Gleckler.
 </p>
 
 <h1>Copyright</h1>
