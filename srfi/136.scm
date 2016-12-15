@@ -20,7 +20,7 @@
 ;; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ;; SOFTWARE.
 
-;;; Sentinel
+;;; Syntactic sentinel
 
 (define-syntax <secret>
   (syntax-rules ()
@@ -229,13 +229,6 @@
        indices args)
       (constructor record))))
 
-#; FIXME
-#;(define (make-predicate rtd)
-  (lambda (obj)
-    (and (record? obj)
-	 (memq rtd (rtd-ancestors (record-rtd obj)))
-	 #t)))
-
 (define (make-accessor ref index)
   (lambda (record)
     (vector-ref (record-fields (ref record)) index)))
@@ -246,7 +239,6 @@
 
 ;;; Procedural interface
 
-;; FIXME: need to (ref record). But how?
 (define (record-type-descriptor record)
   (record-rtd (type-ref record)))
 
@@ -275,7 +267,21 @@
 
 (define (make-record-type-descriptor name fieldspecs . parent*)
   (let
-      ((parent-rtd
+      ((fieldspecs (map (lambda (fieldspec)
+			  (cond
+			   ((symbol? fieldspec)
+			    (list fieldspec #f #f))
+			   ((not (and (list? fieldspec)
+				      (= (length fieldspec) 2)))
+			    (error "make-record-type-descriptor: invalid fieldspec" fieldspec))
+			   ((eq? (car fieldspec) 'immutable)
+			    (list (cadr fieldspec) #f))
+			   ((eq? (car fieldspec) 'mutable)
+			    (list (cadr fieldspec) #f #f))
+			   (else
+			    (error "make-record-type-descriptor: invalid fieldspec" fieldspec))))
+			fieldspecs))
+       (parent-rtd
 	(and (not (null? parent*)) (car parent*))))
     (let-values (((type-metadata make-type type? type-ref make-type-subtype)
 		  (make-subtype parent-rtd #f)))
