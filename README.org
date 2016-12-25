@@ -4,7 +4,7 @@
 
 This repository hosts [[http://srfi.schemers.org/srfi-136/][SRFI 136]]: Extensible record types, a [[http://srfi.schemers.org/][Scheme Request for Implementation]].
 
-This SRFI is in /draft/ status.
+This SRFI is in /final/ status.
 
 The full documentation for this SRFI can be found in the [[http://srfi.schemers.org/srfi-136/srfi-136.html][SRFI Document]].
 
