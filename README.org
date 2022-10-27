@@ -1,3 +1,4 @@
+
 * SRFI 136: Extensible record types
 
 ** by Marc Nieper-Wißkirchen
@@ -9,12 +10,11 @@ keywords: [[https://srfi.schemers.org/?keywords=data-structure][Data Structure]]
 This repository hosts [[https://srfi.schemers.org/srfi-136/][SRFI 136]]: Extensible record types, a [[https://srfi.schemers.org/][Scheme Request for Implementation]].
 
 This SRFI is in /final/ status.
-
+See also [[/srfi-237/][SRFI 237: Reconciled Records]].
 The full documentation for this SRFI can be found in the [[https://srfi.schemers.org/srfi-136/srfi-136.html][SRFI Document]].
 
 If you'd like to participate in the discussion of this SRFI, or report issues with it, please [[https://srfi.schemers.org/srfi-136/][join the SRFI-136 mailing list]] and send your message there.
 
 Thank you.
-
 
 [[mailto:srfi-editors@srfi.schemers.org][The SRFI Editors]]
