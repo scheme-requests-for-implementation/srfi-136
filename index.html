@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
     <head>
+      <!-- SPDX-FileCopyrightText: 2025 Arthur A. Gleckler -->
+      <!-- SPDX-License-Identifier: MIT -->
       <title>Extensible record types</title>
       <link href="/admin.css" rel="stylesheet">
       <link href="/list.css" rel="stylesheet">
@@ -14,11 +16,11 @@
       <p class="authors">by Marc Nieper-Wißkirchen</p>
       <p class="based-on"></p>
       <p class="status">status: <em>final</em> (2016-12-25)</p>
-      <p class="keywords">keywords: <a href="https://srfi.schemers.org/?keywords=data-structure">Data Structure</a></p><span class="see-also">See also <a href="/srfi-237/">SRFI 237: Reconciled Records</a>.</span>
+      <p class="keywords">keywords: <a href="https://srfi.schemers.org/?keywords=data-structure">Data Structure</a>, <a href="https://srfi.schemers.org/?keywords=record-type">Record Type</a></p><span class="see-also">See also <a href="/srfi-237/">SRFI 237: R6RS Records (refined)</a>.</span>
       <ul class="info">
         <li><a href="srfi-136.html">The SRFI Document</a></li>
         <li><a href="https://srfi-email.schemers.org/srfi-136/">Discussion Archive</a></li>
-        <li><a href="https://github.com/scheme-requests-for-implementation/srfi-136">Git repo (on Github)</a></li>
+        <li><a href="https://github.com/scheme-requests-for-implementation/srfi-136">Git repo (on GitHub)</a></li>
         <li><a href="mailto:srfi-136@srfi.schemers.org">srfi-136@<span class="antispam">nospam</span>srfi.schemers.org (subscribers only)</a></li>
         <li><span class="firefox-column-workaround">
             <form method="POST" action="https://www.simplelists.com/subscribe.php">
@@ -27,13 +29,4 @@
         <li><span class="firefox-column-workaround">
             <form method="POST" action="https://www.simplelists.com/subscribe.php">
               <div class="title">Unsubscribe from srfi-136 mailing list</div><input name="email" placeholder="email address" tabindex="5" type="email"><input class="submit" name="submit" tabindex="6" type="submit" value="Unsubscribe from srfi-136"><input type="hidden" name="action" value="unsubscribe"><input name="list" type="hidden" value="srfi-136@srfi.schemers.org"></form></span></li></ul>
-      <h2>Abstract</h2>      <p>SRFI 9 and the compatible R7RS-small provide
-      Scheme with record types. The basic problem that is solved by these
-      record types is that they allow the user to introduce new types, disjoint
-      from all existing types. The record type system described in this
-      document is a conservative extension to SRFI 9 and R7RS record types (in
-      other words, the keyword <code>define-record-type</code> defined in this
-      specification can serve as the equally named keyword from SRFI 9 and R7RS
-      and can thus be safely exported from <code>(srfi 9)</code> and
-      <code>(scheme base)</code>) that is intended to solve another fundamental
-      problem, namely the introduction of subtypes.</body></html>
+      <h2>Abstract</h2>      <p>SRFI 9 and the compatible R7RS-small provide       Scheme with record types. The basic problem that is solved by these       record types is that they allow the user to introduce new types, disjoint       from all existing types. The record type system described in this       document is a conservative extension to SRFI 9 and R7RS record types (in       other words, the keyword <code>define-record-type</code> defined in this       specification can serve as the equally named keyword from SRFI 9 and R7RS       and can thus be safely exported from <code>(srfi 9)</code> and       <code>(scheme base)</code>) that is intended to solve another fundamental       problem, namely the introduction of subtypes.</body></html>
